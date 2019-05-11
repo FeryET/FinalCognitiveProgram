@@ -9,9 +9,9 @@ from sklearn.pipeline import Pipeline
 from sklearn.svm import SVC
 import sys
 
-import transformer
-import vectorizer
-import pipeline_placeholder
+import cognitive_package.model.transformer as transformer
+import cognitive_package.model.vectorizer as vectorizer
+import cognitive_package.model.pipeline_placeholder as pipeline_placeholder
 
 
 class CognitiveClassifierModel:
@@ -77,7 +77,9 @@ class CognitiveClassifierModel:
         p_Model = CognitiveClassifierModel(mag_loc)
         for fname in os.listdir(models_dir):
             with open(os.path.join(models_dir, fname), "rb") as myfile:
+                print(fname)
                 attr_name, _ = os.path.splitext(fname)
+                print(attr_name)
                 setattr(p_Model, attr_name, pickle.load(myfile))
         return p_Model
 
