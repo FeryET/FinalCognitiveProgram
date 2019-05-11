@@ -1,4 +1,5 @@
 from sklearn.base import TransformerMixin, BaseEstimator
+from pymagnitude import Magnitude
 
 
 class VectorizerWrapper(TransformerMixin, BaseEstimator):
