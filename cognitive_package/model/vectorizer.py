@@ -3,7 +3,7 @@ from pymagnitude import Magnitude
 
 
 class VectorizerWrapper(TransformerMixin, BaseEstimator):
-    def __init__(self, model, yFlag=True):
+    def __init__(self, model):
         self.model = model
 
     def fit(self, *args):

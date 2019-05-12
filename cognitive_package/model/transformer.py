@@ -19,7 +19,9 @@ class Transform2WordVectors(BaseEstimator, TransformerMixin):
         else:
             vocab = args[0]["vocab"]
             sortedWords = sorted(vocab, key=vocab.get)
-            wordVectors = Transform2WordVectors.wvObject.getWordVectors(sortedWords)
+            wordVectors = Transform2WordVectors.wvObject.getWordVectors(
+                sortedWords
+            )
             # sparseWordVectors = scipy.sparse.
             # reducedMatrix = sparseX * wordVectors
             reducedMatrix = self.sparseMultiply(sparseX, wordVectors)
