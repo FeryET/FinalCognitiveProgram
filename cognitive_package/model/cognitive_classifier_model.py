@@ -77,10 +77,10 @@ class CognitiveClassifierModel:
         p_Model = CognitiveClassifierModel(mag_loc)
         for fname in os.listdir(models_dir):
             with open(os.path.join(models_dir, fname), "rb") as myfile:
-                print(fname)
                 attr_name, _ = os.path.splitext(fname)
-                print(attr_name)
+                print("loading {} starting".format(attr_name))
                 setattr(p_Model, attr_name, pickle.load(myfile))
+                print("loading {} success".format(attr_name))
         return p_Model
 
     def fit(self, docs, labels, _2D=False):
