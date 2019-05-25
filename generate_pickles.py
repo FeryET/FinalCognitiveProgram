@@ -134,7 +134,7 @@ def main():
         train_texts, train_labels, vectorizer, transformer, pca, clf, clf_2d
     )
     test(test_texts, test_labels, vectorizer, transformer, pca, clf, clf_2d)
-    root_dir = "./cognitive_package/res/pickles"
+    root_dir = "./cognitive_package/res/pickles/"
     filenames = [
         (vectorizer, "vectorizer.pkl"),
         (clf, "clf.pkl"),

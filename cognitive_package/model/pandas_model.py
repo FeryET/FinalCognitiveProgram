@@ -1,4 +1,5 @@
 from PyQt5 import QtCore
+import pandas as pd
 
 
 class PandasModel(QtCore.QAbstractTableModel):

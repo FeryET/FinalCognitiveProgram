@@ -53,6 +53,9 @@ class CognitiveClassifierModel:
             "placeholder",
             pipeline_placeholder.PipelinePlaceHolder(),
         )
+        self.init_pipelines()
+
+    def init_pipelines(self):
         self.pipeline = Pipeline([self.vectorizer, self.transformer, self.clf])
         self.pipeline_2d = Pipeline(
             [
@@ -79,8 +82,10 @@ class CognitiveClassifierModel:
             with open(os.path.join(models_dir, fname), "rb") as myfile:
                 attr_name, _ = os.path.splitext(fname)
                 print("loading {} starting".format(attr_name))
-                setattr(p_Model, attr_name, pickle.load(myfile))
+                pkl_file = pickle.load(myfile)
+                setattr(p_Model, attr_name, (fname, pkl_file))
                 print("loading {} success".format(attr_name))
+        p_Model.init_pipelines()
         return p_Model
 
     def fit(self, docs, labels, _2D=False):
@@ -107,8 +112,9 @@ class CognitiveClassifierModel:
         else:
             return self.pipeline_2d.predict(docs)
 
-    def get_X2D(self, X):
+    def get_X2D(self, docs):
+        self.predict(docs, _2D=True)
         return self.pipeline_2d.named_steps["placeholder"].X
 
     def get_clf_2d(self):
-        return self.clf_2d
+        return self.clf_2d[1]

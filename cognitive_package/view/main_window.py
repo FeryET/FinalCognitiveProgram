@@ -12,12 +12,13 @@ from PyQt5.QtWidgets import (
 from matplotlib.backends.backend_qt5 import FigureCanvasQT, FigureManagerQT
 import matplotlib.pyplot as plt
 import os
-import panda_view
+import cognitive_package.view.panda_view as panda_view
+import cognitive_package.model.pandas_model as panda_model
 
 
 class MainWindow(QMainWindow):
-    on_click_browse_button = pyqtSignal(str)
-    on_click_start_button = pyqtSignal(str)
+    on_click_browse_button_signal = pyqtSignal(str)
+    on_click_start_button_signal = pyqtSignal(str)
 
     def __init__(self):
         super().__init__()
@@ -59,18 +60,20 @@ class MainWindow(QMainWindow):
         self.layout.addWidget(self.figure_canvas, 4, 1, 7, 7)
 
     def __connect_buttons(self):
-        self.browse_button.clicked.connect(self.on_browse_button_clicked)
-        self.start_action_button.clicked.connect(self.on_browse_button_clicked)
+        self.browse_button.clicked_signal.connect(self.on_browse_button_clicked)
+        self.start_action_button.clicked_signal.connect(
+            self.on_start_button_clicked
+        )
 
-    @pyqtSlot()
     def on_start_button_clicked(self):
+        print("on_start_button_clicked")
         self.on_start_button_clicked.emit(self.text_box.toPlainText())
 
-    def get_ax():
+    def get_ax(self):
         return self.ax
 
-    def show_dataframe(dfModel):
-        self.dframe_dialog = panda_view.PandaView(pd_model, self)
+    def show_dataframe(self, dfModel):
+        self.dframe_dialog = panda_view.PandaView(dfModel, self)
         self.dframe_dialog.show()
 
     def on_browse_button_clicked(self):
@@ -83,7 +86,7 @@ class MainWindow(QMainWindow):
             self.on_click_browse_button.emit(path)
 
     def update_table(self, pred_res, proba_res):
-        self.stat_table.update_table(pred, proba)
+        self.stat_table.update_table(pred_res, proba_res)
 
 
 class CustomEditTextBox(QTextEdit):

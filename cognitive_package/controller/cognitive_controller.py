@@ -1,24 +1,29 @@
 import pandas as pd
 from PyQt5.QtCore import pyqtSignal, pyqtSlot
 from PyQt5.QtWidgets import QApplication
-import data_manager.model_manager as model_manager
-import view.main_window as main_window
-import model.pandas_model as pandas_model
+import cognitive_package.data_manager.model_manager as model_manager
+import cognitive_package.view.main_window as main_window
+import cognitive_package.model.pandas_model as pandas_model
 
 
 class CognitiveController(QApplication):
-    def __init__(self, path, **argv):
+    def __init__(self, text_path, mag_loc, model_loc, argv):
         super().__init__(argv)
         self.dataManager = model_manager.ModelManager()
         self.view = main_window.MainWindow()
-        self.init_texts_path = path
+        self.init_texts_path = text_path
         self.BULK_TEXT_CLASSIFCATION_PATH = "result.txt"
+        self.mag_loc = mag_loc
+        self.model_loc = model_loc
         self.__onStartUp__()
         self.view.show()
 
     def __onStartUp__(self):
         texts, labels, _ = self.dataManager.read_texts_by_subdirs(
             self.init_texts_path
+        )
+        self.dataManager.initialize_model_pretrained(
+            self.mag_loc, self.model_loc
         )
         self.dataManager.pre_visualize_data(self.view.get_ax(), texts, labels)
 
