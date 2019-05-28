@@ -13,19 +13,35 @@ import cognitive_package.model.transformer as transformer
 import cognitive_package.model.vectorizer as vectorizer
 import cognitive_package.model.pipeline_placeholder as pipeline_placeholder
 
+from gensim.models import FastText
+
 
 class CognitiveClassifierModel:
-    def __init__(self, mag_loc):
+    MAGNITUDE = "magnitude"
+    GENSIM = "gensim"
+
+    def __init__(self, wordvector_path, magnitude_or_gensim):
+        if (
+            magnitude_or_gensim != self.MAGNITUDE
+            and magnitude_or_gensim != self.GENSIM
+        ):
+            raise AttributeError
         """This is a class which is designed to handle the binary cognitive classification task.
         Arguments:
             magModel {Type is from pymagnitude.Magnitude} -- a magnitude word2vec model 
         """
+
+        self.w2v_model = self.__load_wordvector_model__(
+            magnitude_or_gensim, wordvector_path
+        )
+        self.w2v_wrapper = vectorizer.WordVectorWrapper(
+            self.w2v_model, magnitude_or_gensim
+        )
+
         self.vectorizer = (
             "vectorizer",
             vectorizer.VectorizerWrapper(TfidfVectorizer()),
         )
-        self.w2v_model = Magnitude(mag_loc)
-        self.w2v_wrapper = vectorizer.WordVectorWrapper(self.w2v_model)
         self.transformer = (
             "transformer",
             transformer.Transform2WordVectors(wvObject=self.w2v_wrapper),
@@ -67,8 +83,14 @@ class CognitiveClassifierModel:
             ]
         )
 
+    def __load_wordvector_model__(self, magnitude_or_gensim, wordvector_path):
+        if magnitude_or_gensim == self.MAGNITUDE:
+            return Magnitude(wordvector_path)
+        else:
+            return FastText.load(wordvector_path)
+
     @staticmethod
-    def load_pretrained(models_dir, mag_loc):
+    def load_pretrained(models_dir, wordvector_dir, magnitude_or_gensim):
         """This method will create a pretrained instance of CognitiveClassiferModel class.
 
         Arguments:
@@ -77,7 +99,7 @@ class CognitiveClassifierModel:
         Returns:
             [CognitiveClassiferModel] -- [the pretrained instance]
         """
-        p_Model = CognitiveClassifierModel(mag_loc)
+        p_Model = CognitiveClassifierModel(wordvector_dir, magnitude_or_gensim)
         for fname in os.listdir(models_dir):
             with open(os.path.join(models_dir, fname), "rb") as myfile:
                 attr_name, _ = os.path.splitext(fname)

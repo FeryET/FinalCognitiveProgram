@@ -7,13 +7,24 @@ import cognitive_package.model.pandas_model as pandas_model
 
 
 class CognitiveController(QApplication):
-    def __init__(self, text_path, mag_loc, model_loc, argv):
+    def __init__(
+        self, text_path, w2v_path, model_loc, magnitude_or_gensim, argv
+    ):
+        """This is the main class which will control the application
+        
+        Arguments:
+            text_path {str} -- The directory of the texts that will be plotted in the gui.
+            w2v_path {str} -- [description]
+            model_loc {[type]} -- [description]
+            magnitude_or_gensim {[type]} -- [description]
+            argv {[type]} -- [description]
+        """
         super().__init__(argv)
-        self.dataManager = model_manager.ModelManager()
+        self.dataManager = model_manager.ModelManager(magnitude_or_gensim)
         self.view = main_window.MainWindow()
         self.init_texts_path = text_path
         self.BULK_TEXT_CLASSIFCATION_PATH = "result.txt"
-        self.mag_loc = mag_loc
+        self.w2v_path = w2v_path
         self.model_loc = model_loc
         self.__onStartUp__()
         self.view.show()
@@ -23,7 +34,7 @@ class CognitiveController(QApplication):
             self.init_texts_path
         )
         self.dataManager.initialize_model_pretrained(
-            self.mag_loc, self.model_loc
+            self.w2v_path, self.model_loc
         )
         self.dataManager.pre_visualize_data(self.view.get_ax(), texts, labels)
 

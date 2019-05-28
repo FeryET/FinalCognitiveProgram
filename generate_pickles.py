@@ -25,6 +25,8 @@ import numpy as np
 import spacy
 from sklearn.svm import SVC
 
+from gensim.models import FastText
+
 nlp = spacy.load("en")
 
 
@@ -90,16 +92,16 @@ def main():
     mainDir = "../../datasets_of_cognitive/Data/Unprocessed Data/"
     synthDir = "../../datasets_of_cognitive/Data/SynthTex/"
 
-    magFilePath = (
-        "cognitive_package/res/WordVectors/wiki-news-300d-1m-subword.magnitude"
-    )
-    magFastText = Magnitude(magFilePath)
-    print("{} number of words".format(len(magFastText)))
+    wordVectorFilePath = "cognitive_package/res/wordvectors/FastText/ft.txt"
+
+    # fastTextModel = Magnitude(wordVectorFilePath)
+    fastTextModel = FastText.load(wordVectorFilePath)
+    # print("{} number of words".format(len(fastTextModel)))
 
     vec_model = TfidfVectorizer()
     vectorizer = vectorizer_module.VectorizerWrapper(model=vec_model)
     transformer = transformer_module.Transform2WordVectors(
-        wvObject=vectorizer_module.WordVectorWrapper(magFastText)
+        wvObject=vectorizer_module.WordVectorWrapper(fastTextModel, "gensim")
     )
     pca = PCA(n_components=2)
     clf = SVC(

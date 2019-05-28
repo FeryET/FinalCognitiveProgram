@@ -5,21 +5,22 @@ import cognitive_package.util.text_cleaner as text_cleaner
 
 
 class ModelManager:
-    def __init__(self):
+    def __init__(self, gensim_or_magnitude):
         super().__init__()
         self.model = None
         self.plot_util = None
+        self.gensim_or_magnitude = gensim_or_magnitude
         self.cleaner = text_cleaner.TextCleaner()
 
-    def initialize_model_pretrained(self, mag_loc, models_loc):
+    def initialize_model_pretrained(self, w2v_loc, models_loc):
         self.model = cognitive_classifier_model.CognitiveClassifierModel.load_pretrained(
-            models_loc, mag_loc
+            models_loc, w2v_loc, self.gensim_or_magnitude
         )
         self.plot_util = plot_model.PlotModel(self.model.get_clf_2d())
 
-    def initialize_model(self, mag_loc):
+    def initialize_model(self, w2v_loc):
         self.model = cognitive_classifier_model.CognitiveClassifierModel(
-            mag_loc
+            w2v_loc, self.gensim_or_magnitude
         )
         self.plot_util = plot_model.PlotModel(self.model.get_clf_2d())
 
