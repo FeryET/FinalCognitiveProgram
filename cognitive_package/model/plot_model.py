@@ -80,6 +80,7 @@ class PlotModel:
             axes {plt.axes} -- [description]
         
         """
+        print(x2d, type(x2d))
         axes.scatter(
             x2d[:, 0],
             x2d[:, 1],

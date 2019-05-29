@@ -8,7 +8,6 @@ class ModelManager:
     def __init__(self, gensim_or_magnitude):
         super().__init__()
         self.model = None
-        self.plot_util = None
         self.gensim_or_magnitude = gensim_or_magnitude
         self.cleaner = text_cleaner.TextCleaner()
 
@@ -16,13 +15,11 @@ class ModelManager:
         self.model = cognitive_classifier_model.CognitiveClassifierModel.load_pretrained(
             models_loc, w2v_loc, self.gensim_or_magnitude
         )
-        self.plot_util = plot_model.PlotModel(self.model.get_clf_2d())
 
     def initialize_model(self, w2v_loc):
         self.model = cognitive_classifier_model.CognitiveClassifierModel(
             w2v_loc, self.gensim_or_magnitude
         )
-        self.plot_util = plot_model.PlotModel(self.model.get_clf_2d())
 
     def predict(self, texts):
         pred = self.model.predict(texts)
@@ -56,14 +53,8 @@ class ModelManager:
                     fnames.append(f)
         return texts, fnames
 
-    def plot_data(self, ax, x2D, y):
-        return self.plot_util.plot_data(ax, x2D, y)
+    def get_x2D(self, texts):
+        return self.model.get_X2D(texts)
 
-    def pre_visualize_data(self, ax, texts, labels):
-        x2D = self.model.get_X2D(texts)
-        print(x2D)
-        return self.plot_data(ax, x2D, labels)
-
-    def plot_new_datapoints(self, ax, texts):
-        x2d = self.model.get_X2D(texts)
-        return self.plot_util.add_datapoint(x2d, ax)
+    def get_clf2D(self):
+        return self.model.get_clf_2d()

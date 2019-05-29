@@ -14,11 +14,15 @@ import matplotlib.pyplot as plt
 import os
 import cognitive_package.view.panda_view as panda_view
 import cognitive_package.model.pandas_model as panda_model
+import cognitive_package.view.CustomFigureCanvas as CustomFigureCanvas
 
 
 class MainWindow(QMainWindow):
     on_click_browse_button_signal = pyqtSignal(str)
     on_click_start_button_signal = pyqtSignal(str)
+
+    PLOT_TYPE_ADD_DATAPOINT = "add datapoint"
+    PLOT_TYPE_PLOT_WITH_LABEL = "plot with labels"
 
     def __init__(self):
         super().__init__()
@@ -42,9 +46,8 @@ class MainWindow(QMainWindow):
         self.browse_button = QtWidgets.QPushButton(
             "Browse", self.central_Widget
         )
-        self.fig, self.ax = plt.subplots(nrows=1, ncols=1)
-        self.figure_canvas = CustomFigureCanvas(self.fig)
-
+        self.figure_canvas = CustomFigureCanvas.CustomFigureCanvas(parent=self)
+        self.figure_canvas.draw()
         self.setCentralWidget(self.central_Widget)
 
     def __init_layout__(self):
@@ -60,14 +63,12 @@ class MainWindow(QMainWindow):
         self.layout.addWidget(self.figure_canvas, 4, 1, 7, 7)
 
     def __connect_buttons(self):
-        self.browse_button.clicked_signal.connect(self.on_browse_button_clicked)
-        self.start_action_button.clicked_signal.connect(
-            self.on_start_button_clicked
-        )
+        self.browse_button.clicked.connect(self.on_browse_button_clicked)
+        self.start_action_button.clicked.connect(self.on_start_button_clicked)
 
     def on_start_button_clicked(self):
         print("on_start_button_clicked")
-        self.on_start_button_clicked.emit(self.text_box.toPlainText())
+        self.on_click_start_button_signal.emit(self.text_box.toPlainText())
 
     def get_ax(self):
         return self.ax
@@ -83,10 +84,29 @@ class MainWindow(QMainWindow):
         dialog.setFileMode(QFileDialog.DirectoryOnly)
         if dialog.exec_() == QtWidgets.QDialog.Accepted:
             path = dialog.selectedFiles()[0]
-            self.on_click_browse_button.emit(path)
+            self.on_click_browse_button_signal.emit(path)
 
     def update_table(self, pred_res, proba_res):
         self.stat_table.update_table(pred_res, proba_res)
+
+    def get_figure_canvas(self):
+        return self.figure_canvas
+
+    def set_figure_canvas_clf(self, clf_2d):
+        self.figure_canvas.set_clf_2d(clf_2d)
+
+    def plot(self, x2D, y=None, plot_type="add_datapoint"):
+        if (
+            plot_type != MainWindow.PLOT_TYPE_ADD_DATAPOINT
+            and plot_type != MainWindow.PLOT_TYPE_PLOT_WITH_LABEL
+        ):
+            raise AttributeError
+
+        if plot_type == MainWindow.PLOT_TYPE_ADD_DATAPOINT:
+            self.figure_canvas.add_datapoint(x2D)
+
+        elif plot_type == MainWindow.PLOT_TYPE_PLOT_WITH_LABEL:
+            self.figure_canvas.plot_data(x2D, y)
 
 
 class CustomEditTextBox(QTextEdit):
@@ -151,21 +171,11 @@ class CustomTableView(QTableWidget):
         self.setSpan(2, 1, 1, 2)
 
     def update_table(self, pred, proba):
-        self.setItem(1, 1, CustomTableItem("{:.2f}".format(proba[0])))
-        self.setItem(1, 2, CustomTableItem("{:.2f}".format(proba[1])))
-        self.setItem(2, 1, CustomTableItem(self.classNames[pred]))
-
-
-class CustomFigureCanvas(FigureCanvasQT):
-    def __init__(self, fig):
-        super().__init__(fig)
-        self.setBaseSize(300, 300)
-        self.setMaximumSize(400, 400)
-        self.setMinimumSize(250, 250)
-        self.setSizePolicy(
-            QtWidgets.QSizePolicy.MinimumExpanding,
-            QtWidgets.QSizePolicy.MinimumExpanding,
-        )
+        print(proba, type(proba))
+        print(pred, type(pred))
+        self.setItem(1, 1, CustomTableItem("{:.2f}".format(proba[0, 0])))
+        self.setItem(1, 2, CustomTableItem("{:.2f}".format(proba[0, 1])))
+        self.setItem(2, 1, CustomTableItem(self.classNames[pred[0]]))
 
 
 class CustomTableItem(QTableWidgetItem):
