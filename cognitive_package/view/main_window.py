@@ -63,6 +63,7 @@ class MainWindow(QMainWindow):
         self.layout.addWidget(self.figure_canvas, 4, 1, 7, 7)
 
     def __connect_buttons(self):
+        self.browse_button.hide()
         self.browse_button.clicked.connect(self.on_browse_button_clicked)
         self.start_action_button.clicked.connect(self.on_start_button_clicked)
 

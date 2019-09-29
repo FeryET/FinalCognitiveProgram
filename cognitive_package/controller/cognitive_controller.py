@@ -63,6 +63,7 @@ class CognitiveController(QApplication):
     @pyqtSlot(str)
     def onPathSelectedListener(self, path):
         texts, fnames = self.dataManager.read_texts_in_folder(path)
+        print(len(texts))
         pred_list, proba_list = self.dataManager.predict(texts)
         dframe = pd.DataFrame(zip(*zip(fnames, pred_list, zip(*proba_list))))
         pd_model = pandas_model.PandasModel(dframe)

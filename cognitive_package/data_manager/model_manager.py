@@ -48,9 +48,18 @@ class ModelManager:
         fnames = []
         for root, _, files in os.walk(path):
             for f in files:
-                with open(os.path.join(root, f), "r") as readFile:
-                    texts.append(self.clean_text(readFile.read()))
-                    fnames.append(f)
+                if f.endswith(".txt"):
+                    try:
+                        with open(
+                            os.path.join(root, f),
+                            "r",
+                            encoding="utf-8",
+                            errors="strict",
+                        ) as readFile:
+                            texts.append(self.clean_text(readFile.read()))
+                            fnames.append(f)
+                    except:
+                        pass
         return texts, fnames
 
     def get_x2D(self, texts):
