@@ -67,7 +67,7 @@ class CognitiveController(QApplication):
         pred_list, proba_list = self.dataManager.predict(texts)
         dframe = pd.DataFrame(zip(*zip(fnames, pred_list, zip(*proba_list))))
         pd_model = pandas_model.PandasModel(dframe)
-        self.view.show_dataframe()
+        self.view.show_dataframe(pd_model)
 
     def __connect_signals__(self):
         self.view.on_click_browse_button_signal.connect(
