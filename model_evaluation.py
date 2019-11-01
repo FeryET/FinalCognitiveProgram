@@ -1,5 +1,5 @@
 import pickle as pkl
-
+import pandas as pd
 from gensim.parsing.preprocessing import (
     preprocess_string,
     remove_stopwords,
@@ -15,7 +15,9 @@ from pymagnitude import Magnitude
 from sklearn.decomposition import PCA
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.model_selection import train_test_split
-
+from sklearn.pipeline import Pipeline
+from sklearn.metrics import confusion_matrix, roc_auc_score, log_loss
+from sklearn.model_selection import RepeatedStratifiedKFold
 import cognitive_package.model.transformer as transformer_module
 import cognitive_package.model.vectorizer as vectorizer_module
 import os
@@ -26,6 +28,10 @@ import spacy
 from sklearn.svm import SVC
 
 from gensim.models import FastText
+
+import logging
+
+logging.basicConfig(filename='mylog.log', level=logging.DEBUG)
 
 nlp = spacy.load("en_core_web_sm")
 
@@ -90,67 +96,76 @@ def read_documents(path):
 
 def main():
     print('start...')
+
     mainDir = "../../datasets_of_cognitive/Data/Unprocessed Data/"
     synthDir = "../../datasets_of_cognitive/Data/SynthTex/"
 
     print('reading documents...')
-    texts, labels = read_documents(mainDir)
-    texts, labels = np.array(texts), np.array(labels)
+    original_texts, original_labels = read_documents(mainDir)
+    original_texts, original_labels = np.array(original_texts), np.array(original_labels)
     synth_texts, synth_labels = read_documents(synthDir)
     synth_texts, synth_labels = np.array(synth_texts), np.array(synth_labels)
 
     print('loading fast text model...')
-    wordVectorFilePath = "cognitive_package/res/wordvectors/wiki-news-300d-1m-subword.magnitude"
-    # wordVectorFilePath = "cognitive_package/res/wordvectors/FastText/ft.txt"
+    # wordVectorFilePath = "cognitive_package/res/wordvectors/wiki-news-300d-1m-subword.magnitude"
+    # fastTextModel = Magnitude(wordVectorFilePath)
+    # model_type = vectorizer_module.WordVectorWrapper.MAGNITUDE
+    # print("{} number of words".format(len(fastTextModel)))
 
-    fastTextModel = Magnitude(wordVectorFilePath)
-    # fastTextModel = FastText.load(wordVectorFilePath)
-    print("{} number of words".format(len(fastTextModel)))
+    wordVectorFilePath = "cognitive_package/res/wordvectors/FastText/ft.txt"
+    fastTextModel = FastText.load(wordVectorFilePath)
+    model_type = vectorizer_module.WordVectorWrapper.GENSIM
 
-    vec_model = TfidfVectorizer()
-    vectorizer = vectorizer_module.VectorizerWrapper(model=vec_model)
-    transformer = transformer_module.Transform2WordVectors(
-        wvObject=vectorizer_module.WordVectorWrapper(fastTextModel, vectorizer_module.WordVectorWrapper.MAGNITUDE)
-    )
-    pca = PCA(n_components=2)
-    clf = SVC(
-        kernel="linear",
-        gamma="scale",
-        class_weight="balanced",
-        probability=True,
-    )
-    clf_2d = SVC(
-        kernel="linear",
-        gamma="scale",
-        class_weight="balanced",
-        probability=True,
-    )
-
+    
     print("training starts...")
 
     # train_texts, train_labels = texts[train_idx], labels[train_idx]
     # test_texts, test_labels = texts[test_idx], labels[test_idx]
-    train_texts, test_texts, train_labels, test_labels = train_test_split(
-        texts, labels, test_size=0.2
-    )
-    train_texts = np.array(train_texts.tolist() + synth_texts.tolist())
-    train_labels = np.array(train_labels.tolist() + synth_labels.tolist())
+    
+    kfold = RepeatedStratifiedKFold(n_splits=10, n_repeats=5)
 
-    vectorizer, transformer, pca, clf, clf_2d = train(
-        train_texts, train_labels, vectorizer, transformer, pca, clf, clf_2d
-    )
-    test(test_texts, test_labels, vectorizer, transformer, pca, clf, clf_2d)
-    root_dir = "./cognitive_package/res/pickles/"
-    filenames = [
-        (vectorizer, "vectorizer.pkl"),
-        (clf, "clf.pkl"),
-        (clf_2d, "clf_2d.pkl"),
-        (pca, "pca.pkl"),
-    ]
-    for obj, f in filenames:
-        with open(root_dir + f, "wb") as out_file:
-            print(f)
-            pkl.dump(obj, out_file, protocol=pkl.HIGHEST_PROTOCOL)
+    conf_mats = []
+    roc_auc_scores = []
+    log_losses = []
+    count = 0
+    for train_idx, test_idx in kfold.split(original_texts, original_labels):
+        print("current step: {}".format(count))
+        count+=1
+        train_texts = np.array(original_texts[train_idx].tolist() + synth_texts.tolist())
+        train_labels = np.array(original_labels[train_idx].tolist() + synth_labels.tolist())
+        test_texts = original_texts[test_idx]
+        test_labels = original_labels[test_idx]
+
+        vec_model = TfidfVectorizer()
+        vectorizer = vectorizer_module.VectorizerWrapper(model=vec_model)
+        transformer = transformer_module.Transform2WordVectors(
+            wvObject=vectorizer_module.WordVectorWrapper(fastTextModel, model_type)
+        )
+        clf = SVC(
+            kernel="linear",
+            gamma="scale",
+            class_weight="balanced",
+            probability=True,
+        )
+
+        pipeline = Pipeline(
+            steps=[('vectorizer', vectorizer), ('transformer', transformer), ('clf', clf)]
+        )
+
+        pipeline.fit(train_texts, train_labels)
+        predicted = pipeline.predict(test_texts)
+        conf_mats.append(confusion_matrix(test_labels, predicted))
+        log_losses.append(log_loss(test_labels, predicted))
+        roc_auc_scores.append(roc_auc_score(test_labels, predicted))
+
+    df = pd.DataFrame()
+    df['confusion_matrice'] = conf_mats
+    df['roc_auc_score'] = roc_auc_scores
+    df['log_loss'] = log_loss
+
+    df.to_pickle('res/reports/evaluation_results.pkl')
+        
+
 
 
 def train(texts, labels, vectorizer, transformer, pca, clf, clf_2d):
