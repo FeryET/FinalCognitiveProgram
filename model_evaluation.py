@@ -31,7 +31,7 @@ from gensim.models import FastText
 
 import logging
 
-logging.basicConfig(filename='mylog.log', level=logging.DEBUG)
+logging.basicConfig(filename='res/mylog.log', level=logging.DEBUG)
 
 nlp = spacy.load("en_core_web_sm")
 
@@ -49,7 +49,7 @@ def read_documents(path):
         lambda s: strip_short(s, minsize=4),
     ]
     LEN_THRESHOLD = 10
-    for root, dirs, files in os.walk(path):
+    for root, _, files in os.walk(path):
         if os.path.basename(root) in ["Cog", "NotCog"]:
             print(root)
             for f in files:
@@ -74,25 +74,29 @@ def read_documents(path):
     return texts, labels
 
 
-# def augmentText(docs, labels):
-#     for d, l in zip(docs, labels):
-#         aug_sents = []
-#         for sent in d.split("\n"):
-#             # print(sent)
-#             aug_sents.append(eda.eda(sent))
-#         print(len(aug_sents))
-#         for res in product(*aug_sents):
-#             yield "\n".join(res), l
+
+def train(texts, labels, vectorizer, transformer, pca, clf, clf_2d):
+    X = vectorizer.fit_transform(texts, labels)
+    print("vectorizer is trained.")
+    X_transform = transformer.transform(X, labels)
+    print("transformer is trained.")
+    clf.fit(X_transform, labels)
+    print("main classifier is trained.")
+
+    X_2d = pca.fit_transform(X_transform)
+    print("pca is trained.")
+    clf_2d.fit(X_2d, labels)
+    print("clf 2d is trained.")
+
+    return vectorizer, transformer, pca, clf, clf_2d
 
 
-# def get_wordEmbeddings(doc, model):
-#     result = []
-#     word_list = doc.split()
-#     # print(model.query(word_list))
-#     for word in word_list:
-#         result.append(model.query(word))
-#     result = np.array(result)
+def test(texts, labels, vectorizer, transformer, pca, clf, clf_2d):
+    X = vectorizer.transform(texts, labels)
+    X_transform = transformer.transform(X, labels)
+    X_2d = pca.transform(X_transform)
 
+    print(clf.score(X_transform, labels), clf_2d.score(X_2d, labels))
 
 def main():
     print('start...')
@@ -119,9 +123,7 @@ def main():
     
     print("training starts...")
 
-    # train_texts, train_labels = texts[train_idx], labels[train_idx]
-    # test_texts, test_labels = texts[test_idx], labels[test_idx]
-    
+
     kfold = RepeatedStratifiedKFold(n_splits=10, n_repeats=5)
 
     conf_mats = []
@@ -165,32 +167,6 @@ def main():
 
     df.to_pickle('res/reports/evaluation_results.pkl')
         
-
-
-
-def train(texts, labels, vectorizer, transformer, pca, clf, clf_2d):
-    X = vectorizer.fit_transform(texts, labels)
-    print("vectorizer is trained.")
-    X_transform = transformer.transform(X, labels)
-    print("transformer is trained.")
-    clf.fit(X_transform, labels)
-    print("main classifier is trained.")
-
-    X_2d = pca.fit_transform(X_transform)
-    print("pca is trained.")
-    clf_2d.fit(X_2d, labels)
-    print("clf 2d is trained.")
-
-    return vectorizer, transformer, pca, clf, clf_2d
-
-
-def test(texts, labels, vectorizer, transformer, pca, clf, clf_2d):
-    X = vectorizer.transform(texts, labels)
-    X_transform = transformer.transform(X, labels)
-    X_2d = pca.transform(X_transform)
-
-    print(clf.score(X_transform, labels), clf_2d.score(X_2d, labels))
-
 
 if __name__ == "__main__":
     main()
