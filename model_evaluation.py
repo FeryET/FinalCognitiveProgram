@@ -16,7 +16,7 @@ from sklearn.decomposition import PCA
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.model_selection import train_test_split
 from sklearn.pipeline import Pipeline
-from sklearn.metrics import confusion_matrix, roc_auc_score, log_loss
+from sklearn.metrics import confusion_matrix, roc_auc_score, log_loss, f1_score
 from sklearn.model_selection import RepeatedStratifiedKFold
 import cognitive_package.model.transformer as transformer_module
 import cognitive_package.model.vectorizer as vectorizer_module
@@ -31,7 +31,6 @@ from gensim.models import FastText
 
 import logging
 
-logging.basicConfig(filename='res/mylog.log', level=logging.DEBUG)
 
 nlp = spacy.load("en_core_web_sm")
 
@@ -129,6 +128,7 @@ def main():
     conf_mats = []
     roc_auc_scores = []
     log_losses = []
+    f1_scores = []
     count = 0
     for train_idx, test_idx in kfold.split(original_texts, original_labels):
         print("current step: {}".format(count))
@@ -159,13 +159,14 @@ def main():
         conf_mats.append(confusion_matrix(test_labels, predicted))
         log_losses.append(log_loss(test_labels, predicted))
         roc_auc_scores.append(roc_auc_score(test_labels, predicted))
+        f1_scores.append(f1_score(test_labels, predicted))
 
     df = pd.DataFrame()
     df['confusion_matrice'] = conf_mats
     df['roc_auc_score'] = roc_auc_scores
-    df['log_loss'] = log_loss
-
-    df.to_pickle('res/reports/evaluation_results.pkl')
+    df['log_loss'] = log_losses
+    df['f1_score'] = f1_scores
+    df.to_pickle('cognitive_package/res/reports/model evaluation/evaluation_results.pkl')
         
 
 if __name__ == "__main__":
