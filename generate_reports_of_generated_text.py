@@ -40,25 +40,25 @@ for k in texts.keys():
     print(k, len(texts[k]))
 
 
-# df = pd.DataFrame(columns=["type", "class", "key phrase", "score"])
+df = pd.DataFrame(columns=["type", "class", "key phrase", "score"])
 
-# for k in texts.keys():
-#     print("current group", k)
-#     path = 'cognitive_package/res/dummy.txt'
-#     with open(path, 'w') as myfile:
-#         myfile.write("\n\n".join(texts[k]))
+for k in texts.keys():
+    print("current group", k)
+    path = 'cognitive_package/res/dummy.txt'
+    with open(path, 'w') as myfile:
+        myfile.write("\n\n".join(texts[k]))
 
-#     exctractor = PositionRank()
-#     exctractor.load_document(
-#         path, language='en', normalization='lemmatization')
-#     exctractor.candidate_selection(maximum_word_number=5)
-#     exctractor.candidate_weighting(window=30)
-#     text_type = k.split("_")[0]
-#     text_class = k.split("_")[1]
+    exctractor = PositionRank()
+    exctractor.load_document(
+        path, language='en', normalization='lemmatization')
+    exctractor.candidate_selection(maximum_word_number=5)
+    exctractor.candidate_weighting(window=30)
+    text_type = k.split("_")[0]
+    text_class = k.split("_")[1]
 
-#     for (keyphrase, score) in exctractor.get_n_best(n=100, redundancy_removal=True, stemming=True):
-#         row = pd.Series(data={"type": text_type, "class": text_class,
-#                         "key phrase": keyphrase, "score": score})
-#         df = df.append(row, ignore_index=True)
+    for (keyphrase, score) in exctractor.get_n_best(n=100, redundancy_removal=True, stemming=True):
+        row = pd.Series(data={"type": text_type, "class": text_class,
+                        "key phrase": keyphrase, "score": score})
+        df = df.append(row, ignore_index=True)
 
-# df.to_csv("cognitive_package/res/reports/keyphrases.csv")
+df.to_csv("cognitive_package/res/reports/keyphrases.csv")

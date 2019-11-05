@@ -65,7 +65,7 @@ def read_documents(path):
                             " ".join(preprocess_string(sent, filters=filter))
                         )
                     text = "\n".join(res)
-                    label = labels_dict[root]
+                    label = labels_dict[os.path.basename(root)]
                     if len(text) < LEN_THRESHOLD:
                         print(f)
                         continue
@@ -74,8 +74,6 @@ def read_documents(path):
     texts, labels = zip(*dataset)
     return texts, labels
 
-def preprocess_documents(path, preprocess_folder_root):
-    
 def train(texts, labels, vectorizer, transformer, pca, clf, clf_2d):
     X = vectorizer.fit_transform(texts, labels)
     print("vectorizer is trained.")
@@ -129,7 +127,7 @@ def main():
     print('start...')
 
     mainDir = "../../datasets_of_cognitive/Data/Unprocessed Data/"
-    synthDir = "../../datasets_of_cognitive/Data/2000_gpt_generated/"
+    synthDir = "../../datasets_of_cognitive/Data/SynthTexts/"
 
     print('reading documents...')
     original_texts, original_labels = read_documents(mainDir)
@@ -159,10 +157,7 @@ def main():
     log_losses = []
     f1_scores = []
     rmse_scores = []
-    count = 0
-    for train_idx, test_idx in kfold.split(original_texts, original_labels):
-        print("current step: {}".format(count))
-        count += 1
+    for step, (train_idx, test_idx) in enumerate(kfold.split(original_texts, original_labels)):
         train_texts = np.array(
             original_texts[train_idx].tolist() + synth_texts.tolist())
         train_labels = np.array(
@@ -197,7 +192,7 @@ def main():
         rmse_scores.append(np.sqrt(mean_squared_error(test_labels, predicted)))
         accuracy = ((conf_mats[-1][0][0] + conf_mats[-1]
                      [1][1]) / conf_mats[-1].sum())
-        print("accuracy: {:3f}".format(accuracy))
+        print("current step: {}\taccuracy: {:3f}".format(step, accuracy))
     df = pd.DataFrame()
     df['confusion_matrice'] = conf_mats
     df['roc_auc_score'] = roc_auc_scores
