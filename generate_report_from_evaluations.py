@@ -37,9 +37,7 @@ def extract_metrics():
         cur_metric[FALSE_POS_RATE] = fp / (fp + tn)
         cur_metric[FALSE_NEG_RATE] = fn / (fn + tp)
         cur_metric[ACCURACY] = (tp + tn) / (tp + tn + fp + fn)
-
-        row = pd.Series(cur_metric)
-        metric_df = metric_df.append(cur_metric, ignore_index=True)
+        metric_df = metric_df.append(pd.Series(cur_metric), ignore_index=True)
 
         for k in keys:
             total_metrics[k] += cur_metric[k]

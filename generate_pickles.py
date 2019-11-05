@@ -100,17 +100,19 @@ def main():
     synth_texts, synth_labels = np.array(synth_texts), np.array(synth_labels)
 
     print('loading fast text model...')
-    wordVectorFilePath = "cognitive_package/res/wordvectors/wiki-news-300d-1m-subword.magnitude"
-    # wordVectorFilePath = "cognitive_package/res/wordvectors/FastText/ft.txt"
-
-    fastTextModel = Magnitude(wordVectorFilePath)
-    # fastTextModel = FastText.load(wordVectorFilePath)
-    print("{} number of words".format(len(fastTextModel)))
+    # wordVectorFilePath = "cognitive_package/res/wordvectors/wiki-news-300d-1m-subword.magnitude"
+    # fastTextModel = Magnitude(wordVectorFilePath)
+    # model_type = vectorizer_module.WordVectorWrapper.MAGNITUDE
+    # print("{} number of words".format(len(fastTextModel)))
+    
+    wordVectorFilePath = "cognitive_package/res/wordvectors/FastText/ft.txt"
+    fastTextModel = FastText.load(wordVectorFilePath)
+    model_type = vectorizer_module.WordVectorWrapper.GENSIM
 
     vec_model = TfidfVectorizer()
     vectorizer = vectorizer_module.VectorizerWrapper(model=vec_model)
     transformer = transformer_module.Transform2WordVectors(
-        wvObject=vectorizer_module.WordVectorWrapper(fastTextModel, vectorizer_module.WordVectorWrapper.MAGNITUDE)
+        wvObject=vectorizer_module.WordVectorWrapper(fastTextModel, model_type)
     )
     pca = PCA(n_components=2)
     clf = SVC(
@@ -130,16 +132,10 @@ def main():
 
     # train_texts, train_labels = texts[train_idx], labels[train_idx]
     # test_texts, test_labels = texts[test_idx], labels[test_idx]
-    train_texts, test_texts, train_labels, test_labels = train_test_split(
-        texts, labels, test_size=0.2
-    )
-    train_texts = np.array(train_texts.tolist() + synth_texts.tolist())
-    train_labels = np.array(train_labels.tolist() + synth_labels.tolist())
 
     vectorizer, transformer, pca, clf, clf_2d = train(
-        train_texts, train_labels, vectorizer, transformer, pca, clf, clf_2d
+        texts, labels, vectorizer, transformer, pca, clf, clf_2d
     )
-    test(test_texts, test_labels, vectorizer, transformer, pca, clf, clf_2d)
     root_dir = "./cognitive_package/res/pickles/"
     filenames = [
         (vectorizer, "vectorizer.pkl"),
