@@ -16,7 +16,7 @@ from gensim.summarization.textcleaner import split_sentences
 
 class TextCleaner:
     def __init__(self):
-        self.nlp = spacy.load("en")
+        self.nlp = spacy.load("en_core_web_sm")
         self.filter = [
             lambda x: x.lower(),
             strip_multiple_whitespaces,
