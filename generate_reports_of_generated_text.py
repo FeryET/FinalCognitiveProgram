@@ -11,8 +11,6 @@ import re
 import pandas as pd
 
 
-nlp = spacy.load('en_core_web_sm')
-
 mainDir = "../../datasets_of_cognitive/Data/Unprocessed Data/"
 synthDir = "../../datasets_of_cognitive/Data/SynthTex/"
 
@@ -47,7 +45,8 @@ for k in texts.keys():
     path = 'cognitive_package/res/dummy.txt'
     with open(path, 'w') as myfile:
         myfile.write("\n\n".join(texts[k]))
-
+    with open(path) as myfile:
+        print("Length of {}".format(k), len(myfile.read()))
     exctractor = PositionRank()
     exctractor.load_document(
         path, language='en', normalization='lemmatization')
