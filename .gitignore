@@ -152,3 +152,4 @@ egram-x64.tar.gz
 /XDG_CACHE_HOME
 # End of https://www.gitignore.io/api/linux,python
 /anamoly_detection
+/report_generation
