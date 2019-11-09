@@ -106,6 +106,12 @@ def bind_original_and_augmented(
         bounded.append(current_cell)
     return bounded
 
+def check_over_lapping_file_names(source_path, des_path):
+    for source in os.listdir(source_path):
+        for other in os.listdir(des_path):
+            if source != other and source[:-4] in other[:-4]:
+                print(source, other)
+
 
 def custom_kfold(data, n_splits=10, n_repeats=5):
     interval = int(len(data) / n_splits)
@@ -149,13 +155,14 @@ def entropy(labels, base=None):
 
     return ent
 
-
 def main():
+
+    
     print('start...')
 
-    mainDir = "/home/farhood/Projects/datasets_of_cognitive/Data/Unprocessed Data/"
-    synthDir = "/home/farhood/Projects/datasets_of_cognitive/Data/SynthTexts/"
-
+    mainDir = "/home/farhood/Projects/datasets_of_cognitive/Data/SpellingFixed/"
+    synthDir = "/home/farhood/Projects/datasets_of_cognitive/Data/WordLevelAugmentation/"
+    
     print('reading documents...')
     original_filenames, original_texts, original_labels = read_documents(
         mainDir)
@@ -174,15 +181,15 @@ def main():
     print("Shannon Entropy of dataset: {}".format(entropy(original_labels)))
     print("Values and counts of different classes in dataset: {}".format(
         np.unique(original_labels, return_counts=True)))
-    print('loading fast text model...')
-    # wordVectorFilePath = "cognitive_package/res/wordvectors/wiki-news-300d-1m-subword.magnitude"
-    # fastTextModel = Magnitude(wordVectorFilePath)
-    # model_type = vectorizer_module.WordVectorWrapper.MAGNITUDE
-    # print("{} number of words".format(len(fastTextModel)))
+    print('loading word embedder model...')
+    wordVectorFilePath = "cognitive_package/res/wordvectors/wiki-news-300d-1m-subword.magnitude"
+    wordEmbedderModel = Magnitude(wordVectorFilePath)
+    model_type = vectorizer_module.WordVectorWrapper.MAGNITUDE
+    print("{} number of words".format(len(wordEmbedderModel)))
 
-    wordVectorFilePath = "cognitive_package/res/wordvectors/FastText/ft.txt"
-    fastTextModel = FastText.load(wordVectorFilePath)
-    model_type = vectorizer_module.WordVectorWrapper.GENSIM
+    # wordVectorFilePath = "cognitive_package/res/wordvectors/FastText/ft.txt"
+    # wordEmbedderModel = FastText.load(wordVectorFilePath)
+    # model_type = vectorizer_module.WordVectorWrapper.GENSIM
 
     print("training starts...")
 
@@ -205,15 +212,14 @@ def main():
             test_texts.append(item[TEXT])
             test_labels.append(item[LABEL])
 
-        
         vec_model = TfidfVectorizer()
         vectorizer = vectorizer_module.VectorizerWrapper(model=vec_model)
         transformer = transformer_module.Transform2WordVectors(
             wvObject=vectorizer_module.WordVectorWrapper(
-                fastTextModel, model_type)
+                wordEmbedderModel, model_type)
         )
         clf = SVC(
-            kernel="linear",
+            kernel="rbf",
             gamma="scale",
             class_weight="balanced",
             probability=True,

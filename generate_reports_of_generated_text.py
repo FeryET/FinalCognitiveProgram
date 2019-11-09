@@ -10,18 +10,18 @@ from pke.unsupervised import PositionRank
 import re
 import pandas as pd
 
-
 mainDir = "../../datasets_of_cognitive/Data/Unprocessed Data/"
 synthDir = "../../datasets_of_cognitive/Data/SynthTex/"
 
 locs = {
-    "main": "../../datasets_of_cognitive/Data/Unprocessed Data/",
-    "synth":  "../../datasets_of_cognitive/Data/SynthTex/"
+    "main": "/home/farhood/Projects/datasets_of_cognitive/Data/SpellingFixed/",
+    "synth":  "/home/farhood/Projects/datasets_of_cognitive/Data/SynthTexts/",
+    "augmented": "/home/farhood/Projects/datasets_of_cognitive/Data/WordLevelAugmentation"
 }
 
 types = {"Cog", "NotCog"}
 
-
+augmented_limits = {"synth{}".format(x) for x in range(5)}
 texts = {}
 for k in locs.keys():
     cur_dir = locs[k]
@@ -33,7 +33,11 @@ for k in locs.keys():
         for file_name in files:
             file_path = os.path.join(root, file_name)
             with open(file_path) as myfile:
-                texts[type_label].append(myfile.read())
+                if k == "augmented":
+                    if any([x in file_name for x in augmented_limits]):
+                        texts[type_label].append(myfile.read())
+                else:   
+                    texts[type_label].append(myfile.read())
 for k in texts.keys():
     print(k, len(texts[k]))
 
