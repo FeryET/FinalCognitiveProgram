@@ -161,7 +161,7 @@ def main():
     print('start...')
 
     mainDir = "/home/farhood/Projects/datasets_of_cognitive/Data/SpellingFixed/"
-    synthDir = "/home/farhood/Projects/datasets_of_cognitive/Data/WordLevelAugmentation/"
+    synthDir = "/home/farhood/Projects/datasets_of_cognitive/Data/2000_gpt_generated(ANAMOLIES_REMOVED)"
     
     print('reading documents...')
     original_filenames, original_texts, original_labels = read_documents(
@@ -182,14 +182,14 @@ def main():
     print("Values and counts of different classes in dataset: {}".format(
         np.unique(original_labels, return_counts=True)))
     print('loading word embedder model...')
-    wordVectorFilePath = "cognitive_package/res/wordvectors/wiki-news-300d-1m-subword.magnitude"
-    wordEmbedderModel = Magnitude(wordVectorFilePath)
-    model_type = vectorizer_module.WordVectorWrapper.MAGNITUDE
-    print("{} number of words".format(len(wordEmbedderModel)))
+    # wordVectorFilePath = "cognitive_package/res/wordvectors/wiki-news-300d-1m-subword.magnitude"
+    # wordEmbedderModel = Magnitude(wordVectorFilePath)
+    # model_type = vectorizer_module.WordVectorWrapper.MAGNITUDE
+    # print("{} number of words".format(len(wordEmbedderModel)))
 
-    # wordVectorFilePath = "cognitive_package/res/wordvectors/FastText/ft.txt"
-    # wordEmbedderModel = FastText.load(wordVectorFilePath)
-    # model_type = vectorizer_module.WordVectorWrapper.GENSIM
+    wordVectorFilePath = "cognitive_package/res/wordvectors/FastText/ft.txt"
+    wordEmbedderModel = FastText.load(wordVectorFilePath)
+    model_type = vectorizer_module.WordVectorWrapper.GENSIM
 
     print("training starts...")
 
