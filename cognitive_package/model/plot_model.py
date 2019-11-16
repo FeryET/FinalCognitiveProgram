@@ -56,7 +56,6 @@ class PlotModel:
         self._plot_contours(xx, yy, axes, cmap=self.color_map, alpha=0.8)
         target_ids = [0, 1]
         for i, c, label in zip(target_ids, colors, labels):
-            print(i, label)
             axes.scatter(
                 x0[y == i, 0],
                 x1[y == i, 1],
@@ -80,7 +79,6 @@ class PlotModel:
             axes {plt.axes} -- [description]
         
         """
-        print(x2d, type(x2d))
         axes.scatter(
             x2d[:, 0],
             x2d[:, 1],

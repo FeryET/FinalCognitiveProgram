@@ -50,7 +50,6 @@ class Window(QtWidgets.QDialog):
         clf = SVC()
         clf.fit(x2D_train, y_train)
 
-        print(x2D)
         self.canvas.set_clf_2d(clf)
         self.canvas.plot_data(x2D, y)
 

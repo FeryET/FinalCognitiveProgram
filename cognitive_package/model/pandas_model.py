@@ -60,3 +60,6 @@ class PandasModel(QtCore.QAbstractTableModel):
         )
         self._df.reset_index(inplace=True, drop=True)
         self.layoutChanged.emit()
+
+    def to_csv(self, path):
+        self._df.to_csv(path)

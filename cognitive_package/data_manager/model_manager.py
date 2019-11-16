@@ -2,7 +2,7 @@ import cognitive_package.model.cognitive_classifier_model as cognitive_classifie
 import cognitive_package.model.plot_model as plot_model
 import os
 import cognitive_package.util.text_cleaner as text_cleaner
-
+import cognitive_package.model.keyword_extractor as keyword_extractor
 
 class ModelManager:
     def __init__(self, gensim_or_magnitude):
@@ -10,6 +10,7 @@ class ModelManager:
         self.model = None
         self.gensim_or_magnitude = gensim_or_magnitude
         self.cleaner = text_cleaner.TextCleaner()
+        self.keyword_extractor = keyword_extractor.KeyWordExtractor()
 
     def initialize_model_pretrained(self, w2v_loc, models_loc):
         self.model = cognitive_classifier_model.CognitiveClassifierModel.load_pretrained(
@@ -67,3 +68,6 @@ class ModelManager:
 
     def get_clf2D(self):
         return self.model.get_clf_2d()
+
+    def get_keywords(self, text):
+        return self.keyword_extractor.get_keywords(text)

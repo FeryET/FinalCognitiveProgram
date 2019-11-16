@@ -54,18 +54,23 @@ class CognitiveController(QApplication):
     def onPredictClickListener(self, text):
         print("onPredictClickListener")
         pred, proba = self.dataManager.predict([text])
+        keywords = self.dataManager.get_keywords(text)
         x2D = self.dataManager.get_x2D([text])
         self.view.update_table(pred, proba)
+        self.view.update_keywords(keywords)
         self.view.plot(
             x2D, plot_type=main_window.MainWindow.PLOT_TYPE_ADD_DATAPOINT
         )
 
     @pyqtSlot(str)
     def onPathSelectedListener(self, path):
+        path = "/home/farhood/Projects/datasets_of_cognitive/Data/SpellingFixed/Cog"
         texts, fnames = self.dataManager.read_texts_in_folder(path)
-        print(len(texts))
         pred_list, proba_list = self.dataManager.predict(texts)
-        dframe = pd.DataFrame(zip(*zip(fnames, pred_list, zip(*proba_list))))
+        dframe = pd.DataFrame()
+        dframe["file name"] = fnames
+        dframe["prediction"] = [main_window.StatTableView.CLASS_NAMES[x] for x in pred_list]
+        dframe["proba Cog"], dframe["proba Not Cog"] = zip(*proba_list)
         pd_model = pandas_model.PandasModel(dframe)
         self.view.show_dataframe(pd_model)
 
