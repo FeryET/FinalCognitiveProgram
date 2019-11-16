@@ -74,9 +74,7 @@ class CustomFigureCanvas(FigureCanvasQTAgg):
         self.axes.clear()
         self._plot_contours(xx, yy, cmap=self.color_map, alpha=0.8)
         target_ids = [0, 1]
-        print(x2D, y)
         for i, c, label in zip(target_ids, colors, labels):
-            print(i, label)
             self.axes.scatter(
                 x2D[y == i, 0],
                 x2D[y == i, 1],
@@ -101,7 +99,6 @@ class CustomFigureCanvas(FigureCanvasQTAgg):
             axes {plt.axes} -- [description]
         
         """
-        print(x2d, type(x2d))
         self.axes.scatter(
             x2d[:, 0],
             x2d[:, 1],

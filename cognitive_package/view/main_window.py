@@ -8,7 +8,13 @@ from PyQt5.QtWidgets import (
     QTableWidgetItem,
     QFileDialog,
     QDialog,
+    QHBoxLayout,
+    QVBoxLayout,
+    QGridLayout,
+    QSizePolicy,
+    QHeaderView
 )
+from PyQt5.QtCore import Qt
 from matplotlib.backends.backend_qt5 import FigureCanvasQT, FigureManagerQT
 import matplotlib.pyplot as plt
 import os
@@ -38,8 +44,8 @@ class MainWindow(QMainWindow):
 
     def __init_widgets__(self):
         self.central_Widget = QtWidgets.QWidget()
-        self.text_box = CustomEditTextBox(self.central_Widget)
-        self.stat_table = CustomTableView(self.central_Widget)
+        self.text_box = TextInputBox(self.central_Widget)
+        self.stat_table = StatTableView(self.central_Widget)
         self.start_action_button = QtWidgets.QPushButton(
             "Start Classification", self.central_Widget
         )
@@ -48,22 +54,30 @@ class MainWindow(QMainWindow):
         )
         self.figure_canvas = CustomFigureCanvas.CustomFigureCanvas(parent=self)
         self.figure_canvas.draw()
+        self.keywords_table = KeywordTableView(self)
         self.setCentralWidget(self.central_Widget)
 
     def __init_layout__(self):
-        self.layout = QtWidgets.QGridLayout(self.central_Widget)
-        self.layout.setColumnMinimumWidth = 20
-        self.layout.setRowMinimumHeight = 20
-        self.layout.setRowStretch = True
-        self.layout.setColumnStretch = True
-        self.layout.addWidget(self.start_action_button, 0, 0, 1, 1)
-        self.layout.addWidget(self.browse_button, 1, 0, 1, 1)
-        self.layout.addWidget(self.stat_table, 0, 1, 3, 3)
-        self.layout.addWidget(self.text_box, 0, 8, 10, 10)
-        self.layout.addWidget(self.figure_canvas, 4, 1, 7, 7)
+        self.main_layout = QtWidgets.QGridLayout(self.central_Widget)
+        self.main_layout.setColumnMinimumWidth = 20
+        self.main_layout.setRowMinimumHeight = 20
+        self.main_layout.setRowStretch = True
+        self.main_layout.setColumnStretch = True
+        
+        button_layout = QVBoxLayout()
+        button_layout.addStretch()
+        button_layout.addWidget(self.start_action_button)
+        button_layout.addWidget(self.browse_button)
+        button_layout.addStretch()
+        # button_layout.setAlignment(Qt.AlignTop)
+
+        self.main_layout.addLayout(button_layout, 0, 0, 3, 1)
+        self.main_layout.addWidget(self.keywords_table, 4, 0, 7, 1)
+        self.main_layout.addWidget(self.stat_table, 0, 1, 3, 7)        
+        self.main_layout.addWidget(self.text_box, 0, 8, 11, 10)
+        self.main_layout.addWidget(self.figure_canvas, 4, 1, 7, 7)
 
     def __connect_buttons(self):
-        self.browse_button.hide()
         self.browse_button.clicked.connect(self.on_browse_button_clicked)
         self.start_action_button.clicked.connect(self.on_start_button_clicked)
 
@@ -109,8 +123,10 @@ class MainWindow(QMainWindow):
         elif plot_type == MainWindow.PLOT_TYPE_PLOT_WITH_LABEL:
             self.figure_canvas.plot_data(x2D, y)
 
+    def update_keywords(self, keywords):
+        pass
 
-class CustomEditTextBox(QTextEdit):
+class TextInputBox(QTextEdit):
     def __init__(self, parent=None):
         super().__init__(parent)
         self.minimumWidth = 200
@@ -119,7 +135,8 @@ class CustomEditTextBox(QTextEdit):
         self.placeholderText = "Type your text here..."
 
 
-class CustomTableView(QTableWidget):
+class StatTableView(QTableWidget):
+    CLASS_NAMES = {0: "Cognitive", 1: "Not Cognitive"}
     def __init__(self, parent=None):
         super().__init__(parent)
         self.minimumWidth = 200
@@ -132,7 +149,6 @@ class CustomTableView(QTableWidget):
         for i in range(3):
             self.insertColumn(i)
 
-        self.classNames = {0: "Cognitive", 1: "Not Cognitive"}
         self.horizontalHeader().hide()
         self.verticalHeader().hide()
         self.setEditTriggers(QtWidgets.QAbstractItemView.NoEditTriggers)
@@ -160,27 +176,45 @@ class CustomTableView(QTableWidget):
         )
 
     def __init_table(self):
-        self.setItem(0, 0, CustomTableItem(""))
+        self.setItem(0, 0, StatTableItem(""))
         self.item
-        self.setItem(1, 0, CustomTableItem("Probability"))
-        self.setItem(2, 0, CustomTableItem("Prediction"))
+        self.setItem(1, 0, StatTableItem("Probability"))
+        self.setItem(2, 0, StatTableItem("Prediction"))
 
-        self.setItem(0, 0, CustomTableItem(""))
-        self.setItem(0, 1, CustomTableItem(self.classNames[0]))
-        self.setItem(0, 2, CustomTableItem(self.classNames[1]))
+        self.setItem(0, 0, StatTableItem(""))
+        self.setItem(0, 1, StatTableItem(self.CLASS_NAMES[0]))
+        self.setItem(0, 2, StatTableItem(self.CLASS_NAMES[1]))
 
         self.setSpan(2, 1, 1, 2)
 
     def update_table(self, pred, proba):
         print(proba, type(proba))
         print(pred, type(pred))
-        self.setItem(1, 1, CustomTableItem("{:.2f}".format(proba[0, 0])))
-        self.setItem(1, 2, CustomTableItem("{:.2f}".format(proba[0, 1])))
-        self.setItem(2, 1, CustomTableItem(self.classNames[pred[0]]))
+        self.setItem(1, 1, StatTableItem("{:.2f}".format(proba[0, 0])))
+        self.setItem(1, 2, StatTableItem("{:.2f}".format(proba[0, 1])))
+        self.setItem(2, 1, StatTableItem(self.CLASS_NAMES[pred[0]]))
 
 
-class CustomTableItem(QTableWidgetItem):
+class StatTableItem(QTableWidgetItem):
     def __init__(self, content):
         super().__init__(content)
         self.setTextAlignment(QtCore.Qt.AlignCenter)
 
+class KeywordTableView(QTableWidget):
+    def __init__(self, parent=None):
+        super().__init__(parent)
+        self.rows = []
+        self.verticalHeader().hide()
+        self.setColumnCount(2)
+        self.setHorizontalHeaderLabels(["Keyword","Score"])
+        # self.horizontalHeader().setStretchLastSection(True)
+        self.horizontalHeader().setSectionResizeMode(QHeaderView.Stretch)
+
+    def update_table(self, items):
+        self.clear()
+        for idx, (keyword, score) in enumerate(items):
+            self.insertRow(idx)
+            self.setItem(idx, 0, QTableWidgetItem(keyword))
+            self.setItem(idx, 1, QTableWidgetItem("{:3f}".format(score)))
+        self.resizeColumnsToContents()
+        self.resizeRowsToContents()
